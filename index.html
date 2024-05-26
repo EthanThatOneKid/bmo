@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BMO</title>
+    <meta name="description" content="BMO of Ooo" />
+
+    <style>
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background-color: rgb(93, 166, 150);
+      }
+
+      .screen {
+        width: min(600px, 100%);
+        height: 400px;
+        background-color: #bffecb;
+        border-radius: 2rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .face-container svg {
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="screen">
+      <div class="face-container">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+          <!-- EYES -->
+          <circle cx="33" cy="30" r="2" fill="black" />
+          <circle cx="66" cy="30" r="2" fill="black" />
+
+          <!-- MOUTH -->
+          <path
+            d="M 35 45 Q 50 55 65 45"
+            stroke="black"
+            stroke-width="2"
+            fill="transparent"
+            stroke-linecap="round"
+          />
+        </svg>
+      </div>
+    </div>
+  </body>
+</html>
