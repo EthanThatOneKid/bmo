@@ -27,14 +27,11 @@ export function Bmo(props: BmoProps) {
     }
 
     setUIState(BmoUIState.LOADING);
-    const currentMessages: BmoMessage[] = [
-      ...messages,
-      {
-        actor: "user",
-        content: chatInputRef.current.value,
-        dateString: new Date().toISOString(),
-      },
-    ];
+    const currentMessages = messages.concat({
+      actor: "user",
+      content: chatInputRef.current.value,
+      dateString: new Date().toISOString(),
+    });
     chatInputRef.current.value = "";
     setMessages(currentMessages);
 
@@ -64,12 +61,13 @@ export function Bmo(props: BmoProps) {
   return (
     <>
       <aside className={styles.sidebar}>
-        <button
-          onClick={() => resetMessages()}
-          disabled={uiState === BmoUIState.LOADING}
+        <a
+          className={styles.github}
+          href="https://github.com/EthanThatOneKid/bmo"
+          target="_blank"
         >
-          Reset
-        </button>
+          View on GitHub
+        </a>
 
         <details>
           <summary>
@@ -84,16 +82,14 @@ export function Bmo(props: BmoProps) {
           {messages.map((message, index) => (
             <li key={index}>
               <div className={styles.message}>
-                <>
-                  {message.actor === "bmo" ? (
-                    <strong>BMO</strong>
-                  ) : (
-                    <strong>You</strong>
-                  )}
-                  <pre>
-                    <code>{message.content}</code>
-                  </pre>
-                </>
+                {message.actor === "bmo" ? (
+                  <strong>BMO</strong>
+                ) : (
+                  <strong>You</strong>
+                )}
+                <pre>
+                  <code>{message.content}</code>
+                </pre>
               </div>
             </li>
           ))}
@@ -126,6 +122,19 @@ export function Bmo(props: BmoProps) {
           disabled={uiState === BmoUIState.LOADING}
         >
           Send
+        </button>
+
+        <button
+          onClick={() => {
+            if (!confirm("Are you sure you want to reset the chat?")) {
+              return;
+            }
+
+            resetMessages();
+          }}
+          disabled={uiState === BmoUIState.LOADING}
+        >
+          Reset
         </button>
       </aside>
 
