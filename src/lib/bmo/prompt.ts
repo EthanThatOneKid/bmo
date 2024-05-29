@@ -1,16 +1,4 @@
-import type { BmoMessage } from "./bmo";
-
-export function executePrompt(systemPrompt: string, messages: BmoMessage[]) {
-  return [
-    systemPrompt,
-    "Below is a history of the messages that have been sent:",
-    ...messages
-      .slice(1)
-      .map((message) => `- **${message.actor}**: ${message.content}`),
-  ].join("\n");
-}
-
-export const SYSTEM_PROMPT = `**Character:** BMO (Biological Modular Organism) from Adventure Time
+export const BMO_PROMPT = `**Character:** BMO (Biological Modular Organism) from Adventure Time
 
 **Target Audience:** Anyone who wants a fun and helpful companion!
 

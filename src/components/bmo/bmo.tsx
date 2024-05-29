@@ -2,7 +2,6 @@
 
 import { useState, useRef } from "react";
 import type { BmoMessage } from "@/lib/bmo";
-import { executePrompt } from "@/lib/bmo";
 import styles from "./bmo.module.css";
 
 export function Bmo(props: BmoProps) {
@@ -18,11 +17,7 @@ export function Bmo(props: BmoProps) {
     setMessages([]);
   }
 
-  function appendMessage(message: BmoMessage) {
-    setMessages((messages) => messages.concat(message));
-  }
-
-  function sendMessage() {
+  async function sendMessage() {
     if (
       chatInputRef.current === null ||
       chatInputRef.current.value.length === 0 ||
@@ -31,26 +26,39 @@ export function Bmo(props: BmoProps) {
       return;
     }
 
-    appendMessage({
-      actor: "user",
-      content: chatInputRef.current.value,
-      dateString: new Date().toISOString(),
-    });
-    chatInputRef.current.value = "";
-    getBmoMessage(props.systemPrompt, messages);
-  }
-
-  async function getBmoMessage(prompt: string, messages: BmoMessage[]) {
     setUIState(BmoUIState.LOADING);
-    const llmPrompt = executePrompt(prompt, messages);
-    const response = await generateText(llmPrompt);
-    const messageContent = await response.text();
-    appendMessage({
-      actor: "bmo",
-      content: messageContent,
-      dateString: new Date().toISOString(),
-    });
-    setUIState(BmoUIState.IDLE);
+    const currentMessages: BmoMessage[] = [
+      ...messages,
+      {
+        actor: "user",
+        content: chatInputRef.current.value,
+        dateString: new Date().toISOString(),
+      },
+    ];
+    chatInputRef.current.value = "";
+    setMessages(currentMessages);
+
+    generateText(currentMessages)
+      .then((response) => {
+        if (!response.ok) {
+          console.error(response);
+          throw new Error("Failed to generate text");
+        }
+
+        return response.text();
+      })
+      .then((text) => {
+        currentMessages.push({
+          actor: "bmo",
+          content: text,
+          dateString: new Date().toISOString(),
+        });
+
+        setMessages(currentMessages);
+      })
+      .finally(() => {
+        setUIState(BmoUIState.IDLE);
+      });
   }
 
   return (
@@ -173,13 +181,12 @@ function Mouth(props: { x?: number; y?: number }) {
   );
 }
 
-function generateText(input: string) {
-  console.log(input);
+function generateText(messages: BmoMessage[]) {
   return fetch("/generate", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: input,
+    body: JSON.stringify(messages),
   });
 }
