@@ -25,6 +25,10 @@
   white-space: pre-wrap;
 }
 
+.systemPrompt {
+  white-space: pre-wrap;
+}
+
 .sidebar {
   position: fixed;
   top: 0;

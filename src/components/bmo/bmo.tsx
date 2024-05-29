@@ -67,7 +67,7 @@ export function Bmo(props: BmoProps) {
           <summary>
             <strong>BMO</strong> (System Prompt)
           </summary>
-          <pre>
+          <pre className={styles.systemPrompt}>
             <code>{props.systemPrompt}</code>
           </pre>
         </details>
