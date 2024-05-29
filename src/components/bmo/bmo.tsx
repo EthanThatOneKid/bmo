@@ -1,4 +1,7 @@
+"use client";
+
 import { useState, useRef } from "react";
+import styles from "./bmo.module.css";
 
 export interface BmoProps {
   prompt: string;
@@ -38,15 +41,14 @@ export function Bmo(props: BmoProps) {
 
   return (
     <>
-      <aside>
+      <aside className={styles.sidebar}>
         <textarea
           ref={initialMessageRef}
           cols={30}
           rows={10}
           placeholder="Bmo's initial system message."
-        >
-          {messages[0].content}
-        </textarea>
+          defaultValue={props.prompt}
+        />
         <button onClick={() => resetMessages()}>Reset</button>
       </aside>
 
@@ -57,7 +59,7 @@ export function Bmo(props: BmoProps) {
 
 function Screen() {
   return (
-    <div className="screen">
+    <div className={styles.screen}>
       <Face />
     </div>
   );
@@ -65,7 +67,7 @@ function Screen() {
 
 function Face() {
   return (
-    <div className="face">
+    <div className={styles.face}>
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
         <Eye x={33} y={30} />
         <Eye x={66} y={30} />
