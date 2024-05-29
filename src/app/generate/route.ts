@@ -11,7 +11,6 @@ export async function POST(request: Request) {
 }
 
 async function executeModel(model: GenerativeModel, contents: Content[]) {
-  console.dir(contents, { depth: null });
   const { response } = await model.generateContent({ contents });
   return await response.text();
 }
@@ -25,7 +24,7 @@ function createGenerativeModel() {
   return genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 }
 
-export function toAPI(messages: BmoMessage[]): Content[] {
+function toAPI(messages: BmoMessage[]): Content[] {
   return [
     {
       role: "model",
