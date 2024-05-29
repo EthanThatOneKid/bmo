@@ -8,26 +8,14 @@ import styles from "./bmo.module.css";
 export function Bmo(props: BmoProps) {
   const chatInputRef = useRef<HTMLTextAreaElement>(null);
   const [uiState, setUIState] = useState<BmoUIState>(BmoUIState.IDLE);
-  const [messages, setMessages] = useState<BmoMessage[]>([
-    {
-      actor: "bmo",
-      content: props.systemPrompt,
-      dateString: new Date().toISOString(),
-    },
-  ]);
+  const [messages, setMessages] = useState<BmoMessage[]>([]);
 
   function resetMessages() {
     if (uiState === BmoUIState.LOADING) {
       return;
     }
 
-    setMessages([
-      {
-        actor: "bmo",
-        content: props.systemPrompt,
-        dateString: new Date().toISOString(),
-      },
-    ]);
+    setMessages([]);
   }
 
   function appendMessage(message: BmoMessage) {
@@ -55,11 +43,11 @@ export function Bmo(props: BmoProps) {
   async function getBmoMessage(prompt: string, messages: BmoMessage[]) {
     setUIState(BmoUIState.LOADING);
     const llmPrompt = executePrompt(prompt, messages);
-    console.log(llmPrompt);
-    await sleep(2e3);
+    const response = await generateText(llmPrompt);
+    const messageContent = await response.text();
     appendMessage({
       actor: "bmo",
-      content: "This is a response from BMO.",
+      content: messageContent,
       dateString: new Date().toISOString(),
     });
     setUIState(BmoUIState.IDLE);
@@ -68,33 +56,36 @@ export function Bmo(props: BmoProps) {
   return (
     <>
       <aside className={styles.sidebar}>
-        <button onClick={() => resetMessages()}>Reset</button>
+        <button
+          onClick={() => resetMessages()}
+          disabled={uiState === BmoUIState.LOADING}
+        >
+          Reset
+        </button>
+
+        <details>
+          <summary>
+            <strong>BMO</strong> (System Prompt)
+          </summary>
+          <pre>
+            <code>{props.systemPrompt}</code>
+          </pre>
+        </details>
 
         <ul>
           {messages.map((message, index) => (
             <li key={index}>
               <div className={styles.message}>
-                {index === 0 ? (
-                  <details>
-                    <summary>
-                      <strong>BMO</strong> (System Prompt)
-                    </summary>
-                    <pre>
-                      <code>{message.content}</code>
-                    </pre>
-                  </details>
-                ) : (
-                  <>
-                    {message.actor === "bmo" ? (
-                      <strong>BMO</strong>
-                    ) : (
-                      <strong>You</strong>
-                    )}
-                    <pre>
-                      <code>{message.content}</code>
-                    </pre>
-                  </>
-                )}
+                <>
+                  {message.actor === "bmo" ? (
+                    <strong>BMO</strong>
+                  ) : (
+                    <strong>You</strong>
+                  )}
+                  <pre>
+                    <code>{message.content}</code>
+                  </pre>
+                </>
               </div>
             </li>
           ))}
@@ -144,10 +135,6 @@ export enum BmoUIState {
   LOADING = "loading",
 }
 
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 function Screen() {
   return (
     <div className={styles.screen}>
@@ -184,4 +171,15 @@ function Mouth(props: { x?: number; y?: number }) {
       strokeLinecap="round"
     />
   );
+}
+
+function generateText(input: string) {
+  console.log(input);
+  return fetch("/generate", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: input,
+  });
 }
