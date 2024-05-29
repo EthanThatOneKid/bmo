@@ -1,6 +1,6 @@
 # BMO of Ooo
 
-This is a user interface to interact with BMO of Ooo, a Discord bot that provides a variety of features for the Adventure Time Discord server.
+This is a user interface to interact with BMO of Ooo.
 
 ## Development
 
