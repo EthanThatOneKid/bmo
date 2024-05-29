@@ -3,25 +3,13 @@
 import { useState, useRef } from "react";
 import styles from "./bmo.module.css";
 
-export interface BmoProps {
-  prompt: string;
-}
-
-export interface BmoMessage {
-  actor: BmoActor;
-  content: string;
-  timestamp: number;
-}
-
-export type BmoActor = "user" | "bmo";
-
 export function Bmo(props: BmoProps) {
-  const initialMessageRef = useRef<HTMLTextAreaElement>(null);
-  const [messages, setMessages] = useState([
+  const chatInputRef = useRef<HTMLTextAreaElement>(null);
+  const [messages, setMessages] = useState<BmoMessage[]>([
     {
       actor: "bmo",
       content: props.prompt,
-      timestamp: Date.now(),
+      dateString: new Date().toISOString(),
     },
   ]);
 
@@ -30,7 +18,7 @@ export function Bmo(props: BmoProps) {
       {
         actor: "bmo",
         content: props.prompt,
-        timestamp: Date.now(),
+        dateString: new Date().toISOString(),
       },
     ]);
   }
@@ -39,23 +27,104 @@ export function Bmo(props: BmoProps) {
     setMessages((messages) => messages.concat(message));
   }
 
+  function sendMessage() {
+    if (
+      chatInputRef.current === null ||
+      chatInputRef.current.value.length === 0
+    ) {
+      return;
+    }
+
+    appendMessage({
+      actor: "user",
+      content: chatInputRef.current.value,
+      dateString: new Date().toISOString(),
+    });
+    chatInputRef.current.value = "";
+  }
+
   return (
     <>
       <aside className={styles.sidebar}>
-        <textarea
-          ref={initialMessageRef}
-          cols={30}
-          rows={10}
-          placeholder="Bmo's initial system message."
-          defaultValue={props.prompt}
-        />
         <button onClick={() => resetMessages()}>Reset</button>
+
+        <ul>
+          {messages.map((message, index) => (
+            <li key={index}>
+              <div className={styles.message}>
+                {index === 0 ? (
+                  <details>
+                    <summary>
+                      <strong>BMO</strong> (System Prompt)
+                    </summary>
+                    <pre>
+                      <code>{message.content}</code>
+                    </pre>
+                  </details>
+                ) : (
+                  <>
+                    {message.actor === "bmo" ? (
+                      <strong>BMO</strong>
+                    ) : (
+                      <strong>You</strong>
+                    )}
+                    <pre>
+                      <code>{message.content}</code>
+                    </pre>
+                  </>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+
+        <hr />
+
+        <label htmlFor="chatInput">
+          Chat:
+          <br />
+          <textarea
+            ref={chatInputRef}
+            className={styles.chatInput}
+            id="chatInput"
+            onKeyPress={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                sendMessage();
+              }
+            }}
+          />
+        </label>
+        <br />
+        <button onClick={() => sendMessage()}>Send</button>
       </aside>
 
       <Screen />
     </>
   );
 }
+
+export interface BmoProps {
+  prompt: string;
+}
+
+function executePrompt(prompt: string, messages: BmoMessage[]) {
+  return [
+    prompt,
+    "Below is a history of the messages that have been sent:",
+    ...messages
+      .slice(1)
+      .map((message) => `- ${message.actor}: ${message.content}`),
+  ].join("\n");
+}
+
+export interface BmoMessage {
+  actor: BmoActor;
+  content: string;
+  dateString?: string;
+}
+
+export type BmoActor = "user" | "bmo";
 
 function Screen() {
   return (
@@ -88,9 +157,9 @@ function Mouth(props: { x?: number; y?: number }) {
     <path
       d={`M ${35 + x} ${45 + y} Q ${50 + x} ${55 + y} ${65 + x} ${45 + y}`}
       stroke="black"
-      stroke-width="2"
+      strokeWidth="2"
       fill="transparent"
-      stroke-linecap="round"
+      strokeLinecap="round"
     />
   );
 }
