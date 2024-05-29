@@ -5,19 +5,24 @@ import styles from "./bmo.module.css";
 
 export function Bmo(props: BmoProps) {
   const chatInputRef = useRef<HTMLTextAreaElement>(null);
+  const [uiState, setUIState] = useState<BmoUIState>(BmoUIState.IDLE);
   const [messages, setMessages] = useState<BmoMessage[]>([
     {
       actor: "bmo",
-      content: props.prompt,
+      content: props.systemPrompt,
       dateString: new Date().toISOString(),
     },
   ]);
 
   function resetMessages() {
+    if (uiState === BmoUIState.LOADING) {
+      return;
+    }
+
     setMessages([
       {
         actor: "bmo",
-        content: props.prompt,
+        content: props.systemPrompt,
         dateString: new Date().toISOString(),
       },
     ]);
@@ -30,7 +35,8 @@ export function Bmo(props: BmoProps) {
   function sendMessage() {
     if (
       chatInputRef.current === null ||
-      chatInputRef.current.value.length === 0
+      chatInputRef.current.value.length === 0 ||
+      uiState === BmoUIState.LOADING
     ) {
       return;
     }
@@ -41,6 +47,20 @@ export function Bmo(props: BmoProps) {
       dateString: new Date().toISOString(),
     });
     chatInputRef.current.value = "";
+    getBmoMessage(props.systemPrompt, messages);
+  }
+
+  async function getBmoMessage(prompt: string, messages: BmoMessage[]) {
+    setUIState(BmoUIState.LOADING);
+    const llmPrompt = executePrompt(prompt, messages);
+    console.log(llmPrompt);
+    await sleep(2e3);
+    appendMessage({
+      actor: "bmo",
+      content: "This is a response from BMO.",
+      dateString: new Date().toISOString(),
+    });
+    setUIState(BmoUIState.IDLE);
   }
 
   return (
@@ -78,6 +98,10 @@ export function Bmo(props: BmoProps) {
           ))}
         </ul>
 
+        {uiState === BmoUIState.LOADING && (
+          <div className={styles.loading}>Loading...</div>
+        )}
+
         <hr />
 
         <label htmlFor="chatInput">
@@ -96,7 +120,12 @@ export function Bmo(props: BmoProps) {
           />
         </label>
         <br />
-        <button onClick={() => sendMessage()}>Send</button>
+        <button
+          onClick={() => sendMessage()}
+          disabled={uiState === BmoUIState.LOADING}
+        >
+          Send
+        </button>
       </aside>
 
       <Screen />
@@ -105,16 +134,25 @@ export function Bmo(props: BmoProps) {
 }
 
 export interface BmoProps {
-  prompt: string;
+  systemPrompt: string;
 }
 
-function executePrompt(prompt: string, messages: BmoMessage[]) {
+export enum BmoUIState {
+  IDLE = "idle",
+  LOADING = "loading",
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function executePrompt(systemPrompt: string, messages: BmoMessage[]) {
   return [
-    prompt,
+    systemPrompt,
     "Below is a history of the messages that have been sent:",
     ...messages
       .slice(1)
-      .map((message) => `- ${message.actor}: ${message.content}`),
+      .map((message) => `- **${message.actor}**: ${message.content}`),
   ].join("\n");
 }
 
