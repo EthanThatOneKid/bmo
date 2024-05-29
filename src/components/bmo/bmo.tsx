@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useRef } from "react";
+import type { BmoMessage } from "@/lib/bmo";
+import { executePrompt } from "@/lib/bmo";
 import styles from "./bmo.module.css";
 
 export function Bmo(props: BmoProps) {
@@ -145,24 +147,6 @@ export enum BmoUIState {
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
-
-function executePrompt(systemPrompt: string, messages: BmoMessage[]) {
-  return [
-    systemPrompt,
-    "Below is a history of the messages that have been sent:",
-    ...messages
-      .slice(1)
-      .map((message) => `- **${message.actor}**: ${message.content}`),
-  ].join("\n");
-}
-
-export interface BmoMessage {
-  actor: BmoActor;
-  content: string;
-  dateString?: string;
-}
-
-export type BmoActor = "user" | "bmo";
 
 function Screen() {
   return (

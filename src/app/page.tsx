@@ -1,8 +1,6 @@
 import { Bmo } from "@/components/bmo";
+import { SYSTEM_PROMPT } from "@/lib/bmo";
 
 export default async function Home() {
-  const systemPrompt = await fetch("http://localhost:3000/prompt.md").then(
-    (response) => response.text()
-  );
-  return <Bmo systemPrompt={systemPrompt} />;
+  return <Bmo systemPrompt={SYSTEM_PROMPT} />;
 }
