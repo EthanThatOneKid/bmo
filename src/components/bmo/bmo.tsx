@@ -52,6 +52,7 @@ export function Bmo(props: BmoProps) {
         });
 
         setMessages(currentMessages);
+        return generateSpeech(text).play();
       })
       .finally(() => {
         setUIState(BmoUIState.IDLE);
@@ -191,11 +192,17 @@ function Mouth(props: { x?: number; y?: number }) {
 }
 
 function generateText(messages: BmoMessage[]) {
-  return fetch("/generate", {
+  return fetch("/generate/text", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(messages),
   });
+}
+
+function generateSpeech(text: string) {
+  const pathname = `/generate/speech?text=${encodeURIComponent(text)}`;
+  console.log(window.location.href + pathname);
+  return new Audio(pathname);
 }
