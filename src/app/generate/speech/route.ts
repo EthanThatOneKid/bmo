@@ -6,7 +6,6 @@ export async function GET(request: Request) {
 
   const response = await synthesizeSpeech(text);
   const data = await response.json();
-  console.dir(data, { depth: null });
   if (!response.ok) {
     return new Response("Failed to synthesize speech", { status: 500 });
   }
@@ -16,8 +15,11 @@ export async function GET(request: Request) {
   // For LINEAR16 audio, we include the WAV header. Note: as with all bytes
   // fields, protobuffers use a pure binary representation, whereas JSON
   // representations use base64.
-  // A base64-encoded string.
-  return new Response(data.audioContent, {
+  const blob = new Blob(
+    [Uint8Array.from(atob(data.audioContent), (c) => c.charCodeAt(0))],
+    { type: "audio/mpeg" }
+  );
+  return new Response(blob, {
     headers: {
       "Content-Type": "audio/mpeg",
       "Content-Disposition": 'attachment; filename="speech.mp3"',
