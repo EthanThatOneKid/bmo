@@ -193,18 +193,19 @@ function Mouth(props: { x?: number; y?: number }) {
   );
 }
 
-function generateText(messages: BmoMessage[]) {
+function generateText(messages: BmoMessage[]): Promise<Response> {
   return fetch("/generate/text", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(messages),
+  }).catch((error) => {
+    alert("Apologies, but we're unable to generate text at the moment.");
+    throw error;
   });
 }
 
 function generateSpeech(text: string) {
-  const pathname = `/generate/speech?text=${encodeURIComponent(text)}`;
-  console.log(window.location.href + pathname);
-  return new Audio(pathname);
+  return new Audio(`/generate/speech?text=${encodeURIComponent(text)}`);
 }

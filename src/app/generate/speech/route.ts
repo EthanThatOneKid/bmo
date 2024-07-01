@@ -27,7 +27,7 @@ export async function GET(request: Request) {
   });
 }
 
-async function synthesizeSpeech(text: string) {
+async function synthesizeSpeech(text: string): Promise<Response> {
   if (process.env.GOOGLE_TTS_API_KEY === undefined) {
     throw new Error("GOOGLE_TTS_API_KEY is not set");
   }
@@ -45,5 +45,8 @@ async function synthesizeSpeech(text: string) {
       voice: { languageCode: "en-US", ssmlGender: "NEUTRAL" },
       audioConfig: { audioEncoding: "MP3" },
     }),
+  }).catch((error) => {
+    alert("Apologies, but we're unable to generate speech at the moment.");
+    throw error;
   });
 }
