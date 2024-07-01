@@ -16,11 +16,11 @@ async function executeModel(model: GenerativeModel, contents: Content[]) {
 }
 
 function createGenerativeModel() {
-  if (process.env.GOOGLE_API_KEY === undefined) {
-    throw new Error("GOOGLE_API_KEY is not set");
+  if (process.env.GOOGLE_GEN_AI_API_KEY === undefined) {
+    throw new Error("GOOGLE_GEN_AI_API_KEY is not set");
   }
 
-  const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+  const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEN_AI_API_KEY);
   return genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 }
 

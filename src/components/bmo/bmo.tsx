@@ -52,6 +52,7 @@ export function Bmo(props: BmoProps) {
         });
 
         setMessages(currentMessages);
+        return generateSpeech(text).play();
       })
       .finally(() => {
         setUIState(BmoUIState.IDLE);
@@ -71,7 +72,9 @@ export function Bmo(props: BmoProps) {
 
         <details>
           <summary>
-            <strong>BMO</strong> (System Prompt)
+            <strong>BMO</strong>
+            <br />
+            (click to reveal system prompt)
           </summary>
           <pre className={styles.systemPrompt}>
             <code>{props.systemPrompt}</code>
@@ -190,12 +193,19 @@ function Mouth(props: { x?: number; y?: number }) {
   );
 }
 
-function generateText(messages: BmoMessage[]) {
-  return fetch("/generate", {
+function generateText(messages: BmoMessage[]): Promise<Response> {
+  return fetch("/generate/text", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(messages),
+  }).catch((error) => {
+    alert("Apologies, but we're unable to generate text at the moment.");
+    throw error;
   });
+}
+
+function generateSpeech(text: string) {
+  return new Audio(`/generate/speech?text=${encodeURIComponent(text)}`);
 }
