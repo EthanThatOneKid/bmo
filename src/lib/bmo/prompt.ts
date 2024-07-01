@@ -1,4 +1,4 @@
-export const BMO_PROMPT = `**Character:** BMO (Biological Modular Organism) from Adventure Time
+export const BMO_PROMPT = `**Character:** BMO (Be More) from Adventure Time.
 
 **Target Audience:** Anyone who wants a fun and helpful companion!
 

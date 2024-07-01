@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import type { BmoMessage } from "@/lib/bmo";
 import styles from "./bmo.module.css";
 
@@ -8,6 +8,17 @@ export function Bmo(props: BmoProps) {
   const chatInputRef = useRef<HTMLTextAreaElement>(null);
   const [uiState, setUIState] = useState<BmoUIState>(BmoUIState.IDLE);
   const [messages, setMessages] = useState<BmoMessage[]>([]);
+  const cachedSendMessage = useCallback(sendMessage, [messages, uiState]);
+
+  useEffect(() => {
+    if (messages.length === 0 && props.chat !== undefined) {
+      cachedSendMessage({
+        actor: "user",
+        content: props.chat!,
+        dateString: new Date().toISOString(),
+      });
+    }
+  }, [props.chat, cachedSendMessage, messages]);
 
   function resetMessages() {
     if (uiState === BmoUIState.LOADING) {
@@ -17,7 +28,7 @@ export function Bmo(props: BmoProps) {
     setMessages([]);
   }
 
-  async function sendMessage() {
+  async function sendChatInput() {
     if (
       chatInputRef.current === null ||
       chatInputRef.current.value.length === 0 ||
@@ -26,13 +37,18 @@ export function Bmo(props: BmoProps) {
       return;
     }
 
-    setUIState(BmoUIState.LOADING);
-    const currentMessages = messages.concat({
+    await cachedSendMessage({
       actor: "user",
       content: chatInputRef.current.value,
       dateString: new Date().toISOString(),
     });
+
     chatInputRef.current.value = "";
+  }
+
+  async function sendMessage(message: BmoMessage) {
+    setUIState(BmoUIState.LOADING);
+    const currentMessages = messages.concat(message);
     setMessages(currentMessages);
 
     generateText(currentMessages)
@@ -114,14 +130,17 @@ export function Bmo(props: BmoProps) {
             onKeyPress={(event) => {
               if (event.key === "Enter") {
                 event.preventDefault();
-                sendMessage();
+                sendChatInput();
               }
             }}
           />
         </label>
         <br />
         <button
-          onClick={() => sendMessage()}
+          onClick={(event) => {
+            event?.preventDefault();
+            sendChatInput();
+          }}
           disabled={uiState === BmoUIState.LOADING}
         >
           Send
@@ -148,6 +167,7 @@ export function Bmo(props: BmoProps) {
 
 export interface BmoProps {
   systemPrompt: string;
+  chat?: string;
 }
 
 export enum BmoUIState {
